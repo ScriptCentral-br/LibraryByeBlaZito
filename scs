@@ -652,9 +652,53 @@ function OrionLib:MakeWindow(WindowConfig)
 		DragPoint,
 		WindowStuff,
 		AddThemeObject(SetProps(MakeElement("Stroke", Color3.new(0,0,0), 3, 0.7),{}),"Stroke") 
-	}), "Main")
+	}), "Main") -- Inicio aqui nEssa
 
-	if not WindowConfig.IntroEnabled then
+-- =============================================================
+	-- SISTEMA DE ESCALA AUTOMÁTICA INTEGRADO (AJUSTE DE TAMANHO)
+	-- =============================================================
+	local UIScale = Instance.new("UIScale")
+	UIScale.Name = "OrionScale"
+	UIScale.Parent = MainWindow
+
+	local function UpdateScale()
+		local Camera = workspace.CurrentCamera
+		local ViewportSize = Camera.ViewportSize
+		
+		-- Verifica se a tela é pequena (Mobile/Tablet)
+		if ViewportSize.X < 900 or ViewportSize.Y < 600 then
+			-- MODO MOBILE / TELA PEQUENA (AUMENTADO A PEDIDO)
+			if ViewportSize.Y < 500 then
+				-- Antes era 0.30, agora 0.45 para ficar maior
+				UIScale.Scale = 0.75
+			else
+				-- Antes era 0.35, agora 0.50
+				UIScale.Scale = 0.85
+			end
+		else
+			-- MODO PC / TELA GRANDE
+			if ViewportSize.Y < 900 then
+				UIScale.Scale = 0.85 
+			else
+				UIScale.Scale = 1.0
+			end
+		end
+	end
+	
+	UpdateScale()
+	-- Garante a aplicação da escala em múltiplos frames
+	task.spawn(function()
+		for i = 1, 5 do
+			UpdateScale()
+			task.wait(0.5)
+		end
+	end)
+	
+	game:GetService("Workspace").CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(UpdateScale)
+	-- =============================================================
+
+
+	if not WindowConfig.IntroEnabled then --- FINAL 
 		MainWindow.Visible = true
 		TweenService:Create(MainWindow, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Size = UDim2.new(0, 650, 0, 380) 
